@@ -1,0 +1,16 @@
+{
+  "database" : {
+    "host" : "localhost",
+    "port" : 9092,
+    "name" : "~/DATABASE"
+  },
+  "subscriber" : {
+    "uri" : "tcp://ouaz.me",
+    "qos" : 1,
+    "autoReconnect" : true,
+    "cleanSession" : false,
+    "topic" : "measures",
+    "uuid" : "7453f101-49bb-443a-99bd-b35194b06dfe",
+    "connexionTimeout" : "60"
+  }
+}
