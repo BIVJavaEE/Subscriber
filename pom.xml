@@ -27,11 +27,11 @@
 	<dependencies>
 	
 		<!-- https://github.com/BIVJavaEE/Model -->
-		<dependency>
-		    <groupId>com.github.BIVJavaEE</groupId>
-		    <artifactId>Model</artifactId>
-		    <version>-SNAPSHOT</version>
-		</dependency>
+<!-- 		<dependency> -->
+<!-- 		    <groupId>com.github.BIVJavaEE</groupId> -->
+<!-- 		    <artifactId>Model</artifactId> -->
+<!-- 		    <version>-SNAPSHOT</version> -->
+<!-- 		</dependency> -->
 				
 		<!-- https://mvnrepository.com/artifact/org.eclipse.paho/org.eclipse.paho.client.mqttv3 -->
 		<dependency>

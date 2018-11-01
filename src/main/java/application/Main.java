@@ -10,7 +10,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import mapping.MapperFactoryException;
 import mqtt.Subscriber;
 
 public class Main {
@@ -69,8 +68,6 @@ public class Main {
 			subscriber.connect(options, uri, topic, uuid, qos);
 		} catch (MqttException e) {
 			System.out.println("Connection to message broker failed - reason is: " + e.getMessage());
-		} catch (MapperFactoryException e) {
-			System.out.println(e.getMessage());
 		}
 	
 	}

@@ -7,32 +7,25 @@ import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
+import javax.persistence.TransactionRequiredException;
+
 import com.fasterxml.jackson.databind.JsonNode;
 
-import entity.IEntity;
 import entity.Measure;
 import entity.Sensor;
-import mapping.Mapper;
-import mapping.MapperFactory;
-import mapping.MapperFactoryException;
 
 public class Handler implements Runnable{
 	
 	private final BlockingQueue<String> measures = new LinkedBlockingQueue<>();
-	private final MapperFactory<Measure> mapperFactory = new MapperFactory<>();
-	
-	private JsonNode configuration;
-	
-	private Mapper<Measure> mapper;
+	private EntityManagerFactory factory = null;
 	
 	public Handler(JsonNode configuration) {
-		this.configuration = configuration;
-	}
-	
-	public void initialize() throws MapperFactoryException {
 		Map<String, String> properties = new HashMap<>();
 		properties.put("javax.persistence.jdbc.url", "jdbc:h2:tcp://" + configuration.get("host").asText() + ":" + configuration.get("port").asText() + "/" + configuration.get("name").asText());
-		this.mapper = mapperFactory.createMapper(configuration.get("name").asText(), properties);
+		this.factory = Persistence.createEntityManagerFactory(configuration.get("name").asText(), properties);
 	}
 	
 	@Override
@@ -42,9 +35,13 @@ public class Handler implements Runnable{
 			Measure measure;
 			try {
 				data = measures.take();
-				measure = parse(data);
-				this.mapper.save(measure);
-		    	System.out.println("Data saved: " + data);
+				if(data != null && !data.equals("")) {
+					String[] measureData = data.split(";");		
+					measure = parse(measureData);
+					save(measure, Integer.parseInt(measureData[0]));
+					System.out.println("Data saved: " + data);
+					
+				}
 			} catch (InterruptedException e) {
 				System.out.println("Error while handling measure: ");
 				e.printStackTrace();
@@ -61,15 +58,34 @@ public class Handler implements Runnable{
 		}
 	}
 	
-	private Measure parse(String measure){
-		String[] data = measure.split(";");		
+	private Measure parse(String[] measure){
 		Measure res = new Measure();
-		Sensor sensor = new Sensor();
-		sensor.setId(Integer.parseInt(data[0]));
-		res.setSensor(sensor);
-		res.setValue(Double.parseDouble(data[1]));
+		res.setValue(Double.parseDouble(measure[1]));
 		res.setTimestamp(new Timestamp(new Date().getTime()));
 		return res;
+	}
+	
+	private void save(Measure measure, int sensorID) {
+		EntityManager manager = this.factory.createEntityManager();
+		try {
+			manager.getTransaction().begin();
+			Sensor sensor = manager.find(Sensor.class, sensorID);
+			if(sensor != null) {
+				measure.setSensor(sensor);
+				manager.persist(measure);
+				manager.getTransaction().commit();			
+			}else {
+				manager.close();
+			}
+		}catch(IllegalArgumentException | TransactionRequiredException e) {
+			manager.getTransaction().rollback();
+			throw e;
+		}catch(IllegalStateException e) {
+			System.out.println("Can't insert data can't use transaction on JTA entity manager: " + e.getMessage());
+			throw e;
+		}finally {
+			manager.close();
+		}
 	}
 	
 }

@@ -8,8 +8,6 @@ import org.eclipse.paho.client.mqttv3.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import mapping.MapperFactoryException;
-
 public class Subscriber implements MqttCallback {
 	
 	// JSON parser to unserialize objects
@@ -22,12 +20,11 @@ public class Subscriber implements MqttCallback {
 		this.handler = new Handler(configuration);
 	}
 	
-	public void connect(MqttConnectOptions options, String uri, String topic, String uuid, int qos) throws MqttException, MapperFactoryException {
+	public void connect(MqttConnectOptions options, String uri, String topic, String uuid, int qos) throws MqttException {
 		this.client = new MqttClient(uri, uuid);
 		this.client.setCallback(this);
 		this.client.connect(options);	    
         this.client.subscribe(topic, qos);
-        this.handler.initialize();
         Thread thread = new Thread(this.handler);
         thread.start();
 	}
