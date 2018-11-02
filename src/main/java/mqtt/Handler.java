@@ -13,7 +13,6 @@ import javax.persistence.Persistence;
 import javax.persistence.TransactionRequiredException;
 
 import com.fasterxml.jackson.databind.JsonNode;
-
 import entity.Measure;
 import entity.Sensor;
 
@@ -23,9 +22,7 @@ public class Handler implements Runnable{
 	private EntityManagerFactory factory = null;
 	
 	public Handler(JsonNode configuration) {
-		Map<String, String> properties = new HashMap<>();
-		properties.put("javax.persistence.jdbc.url", "jdbc:h2:tcp://" + configuration.get("host").asText() + ":" + configuration.get("port").asText() + "/" + configuration.get("name").asText());
-		this.factory = Persistence.createEntityManagerFactory(configuration.get("name").asText(), properties);
+		this.factory = Persistence.createEntityManagerFactory(configuration.get("name").asText());
 	}
 	
 	@Override
@@ -38,7 +35,7 @@ public class Handler implements Runnable{
 				if(data != null && !data.equals("")) {
 					String[] measureData = data.split(";");		
 					measure = parse(measureData);
-					save(measure, Integer.parseInt(measureData[0]));
+					save(measure, Long.parseLong(measureData[0]));
 					System.out.println("Data saved: " + data);
 					
 				}
@@ -65,7 +62,7 @@ public class Handler implements Runnable{
 		return res;
 	}
 	
-	private void save(Measure measure, int sensorID) {
+	private void save(Measure measure, Long sensorID) {
 		EntityManager manager = this.factory.createEntityManager();
 		try {
 			manager.getTransaction().begin();
