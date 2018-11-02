@@ -14,13 +14,17 @@ import mqtt.Subscriber;
 
 public class Main {
 	
+	public static final String DB_NAME = "bivjee";
+	
 	public static void initConfiguration(Configuration configuration) throws ConfigurationException {
 		System.out.println("Creating configuration file on path: " + Paths.get(configuration.getPath()).toAbsolutePath().toString());
 		ObjectNode parameters = new ObjectNode(JsonNodeFactory.instance);
 		parameters.putObject(("database"))
-		.put("host", "localhost")
-		.put("port", 9092)
-		.put("name", "~/DATABASE");
+		.put("driver", "org.mariadb.jdbc.driver")
+		.put("hibernate_dialect", "org.hibernate.dialect.MySQL5Dialect")
+		.put("uri", "localhost")
+		.put("user", "")
+		.put("password", "");
 		parameters.putObject("subscriber")
 		.put("uri", "localhost")
 		.put("qos", 1)

@@ -13,16 +13,25 @@ import javax.persistence.Persistence;
 import javax.persistence.TransactionRequiredException;
 
 import com.fasterxml.jackson.databind.JsonNode;
+
+import application.Main;
 import entity.Measure;
 import entity.Sensor;
 
 public class Handler implements Runnable{
 	
 	private final BlockingQueue<String> measures = new LinkedBlockingQueue<>();
-	private EntityManagerFactory factory = null;
+	private EntityManager manager = null;
 	
 	public Handler(JsonNode configuration) {
-		this.factory = Persistence.createEntityManagerFactory(configuration.get("name").asText());
+		Map<String, String> properties = new HashMap<>();
+		properties.put("javax.persistence.jdbc.driver", configuration.get("driver").asText());
+		properties.put("hibernate.dialect", configuration.get("hibernate_dialect").asText());
+		properties.put("javax.persistence.jdbc.url", configuration.get("uri").asText());
+		properties.put("javax.persistence.jdbc.user", configuration.get("user").asText());
+		properties.put("javax.persistence.jdbc.password", configuration.get("password").asText());
+		EntityManagerFactory factory = Persistence.createEntityManagerFactory(Main.DB_NAME, properties);
+		this.manager = factory.createEntityManager();
 	}
 	
 	@Override
@@ -63,16 +72,13 @@ public class Handler implements Runnable{
 	}
 	
 	private void save(Measure measure, Long sensorID) {
-		EntityManager manager = this.factory.createEntityManager();
 		try {
-			manager.getTransaction().begin();
 			Sensor sensor = manager.find(Sensor.class, sensorID);
 			if(sensor != null) {
 				measure.setSensor(sensor);
+				manager.getTransaction().begin();
 				manager.persist(measure);
 				manager.getTransaction().commit();			
-			}else {
-				manager.close();
 			}
 		}catch(IllegalArgumentException | TransactionRequiredException e) {
 			manager.getTransaction().rollback();
@@ -80,8 +86,6 @@ public class Handler implements Runnable{
 		}catch(IllegalStateException e) {
 			System.out.println("Can't insert data can't use transaction on JTA entity manager: " + e.getMessage());
 			throw e;
-		}finally {
-			manager.close();
 		}
 	}
 	
