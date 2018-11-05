@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Class-Path: jboss-logging-3.3.2.Final.jar jboss-transaction-api_1.2_sp
+ ec-1.1.1.Final.jar classmate-1.3.4.jar javax.persistence-api-2.2.jar 
+ hibernate-core-5.3.6.Final.jar javassist-3.23.1-GA.jar jackson-annota
+ tions-2.9.0.jar javax.activation-api-1.2.0.jar protobuf-java-3.6.1.ja
+ r dom4j-1.6.1.jar byte-buddy-1.8.17.jar org.eclipse.paho.client.mqttv
+ 3-1.2.0.jar hibernate-commons-annotations-5.0.4.Final.jar jackson-dat
+ abind-2.9.7.jar Model--9a1a94f9b9-1.jar h2-1.4.197.jar jandex-2.0.5.F
+ inal.jar mysql-connector-java-8.0.13.jar jackson-core-2.9.7.jar antlr
+ -2.7.7.jar
+Main-Class: application.Main
+
