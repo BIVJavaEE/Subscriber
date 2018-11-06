@@ -14,7 +14,7 @@ public class Configuration {
 	private ObjectNode node;
 
 	private String path;
-	
+
 	public Configuration(String path) {
 		this.mapper = new ObjectMapper();
 		this.path = path;

@@ -1,18 +1,23 @@
 {
+  "logger" : {
+    "active" : true,
+    "path" : ""
+  },
   "database" : {
+    "active" : true,
     "driver" : "com.mysql.jdbc.Driver",
     "hibernate_dialect" : "org.hibernate.dialect.MySQL5Dialect",
-    "uri" : "jdbc:mysql://ouaz.me:3306/bivjee?serverTimezone=UTC",
-    "user" : "jee",
-    "password" : "boobies"
+    "uri" : "jdbc:mysql://localhost:3306/database?serverTimezone=UTC",
+    "user" : "",
+    "password" : ""
   },
   "subscriber" : {
-    "uri" : "tcp://ouaz.me",
+    "uri" : "",
     "qos" : 1,
     "autoReconnect" : true,
     "cleanSession" : false,
-    "topic" : "measures",
-    "uuid" : "769bff1f-318b-4694-a733-e38820e4bcd2",
+    "topic" : "",
+    "uuid" : "",
     "connexionTimeout" : "60"
   }
 }

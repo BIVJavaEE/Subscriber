@@ -4,6 +4,7 @@ package mqtt;
 import javax.persistence.PersistenceException;
 import javax.persistence.TransactionRequiredException;
 
+import org.apache.log4j.Logger;
 import org.eclipse.paho.client.mqttv3.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -15,7 +16,7 @@ public class Subscriber implements MqttCallback {
 	
 	private IMqttClient client;
 	
-
+	
 	public Subscriber(JsonNode configuration) {
 		this.handler = new Handler(configuration);
 	}
@@ -36,6 +37,9 @@ public class Subscriber implements MqttCallback {
 
     public void messageArrived(String topic, MqttMessage message) throws MqttException {
 	    try {
+	    	if(Logger.getRootLogger().isInfoEnabled()) {
+	    		Logger.getRootLogger().info("Data received: " + message.toString());
+	    	}
 	    	System.out.println("Data received: " + message.toString());
 	    	this.handler.handleMeasure(message.toString());
 	    }catch (IllegalArgumentException | TransactionRequiredException e) {

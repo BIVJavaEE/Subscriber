@@ -12,26 +12,34 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.TransactionRequiredException;
 
+import org.apache.log4j.Logger;
+
 import com.fasterxml.jackson.databind.JsonNode;
 
-import application.Main;
+import application.Application;
 import entity.Measure;
 import entity.Sensor;
 
 public class Handler implements Runnable{
 	
 	private final BlockingQueue<String> measures = new LinkedBlockingQueue<>();
-	private EntityManager manager = null;
+	
+	private EntityManager manager;
+	
+	private JsonNode configuration;
 	
 	public Handler(JsonNode configuration) {
-		Map<String, String> properties = new HashMap<>();
-		properties.put("javax.persistence.jdbc.driver", configuration.get("driver").asText());
-		properties.put("hibernate.dialect", configuration.get("hibernate_dialect").asText());
-		properties.put("javax.persistence.jdbc.url", configuration.get("uri").asText());
-		properties.put("javax.persistence.jdbc.user", configuration.get("user").asText());
-		properties.put("javax.persistence.jdbc.password", configuration.get("password").asText());
-		EntityManagerFactory factory = Persistence.createEntityManagerFactory(Main.DB_NAME, properties);
-		this.manager = factory.createEntityManager();
+		this.configuration = configuration;
+		if(this.configuration.get("active").asBoolean()) {
+			Map<String, String> properties = new HashMap<>();
+			properties.put("javax.persistence.jdbc.driver", configuration.get("driver").asText());
+			properties.put("hibernate.dialect", configuration.get("hibernate_dialect").asText());
+			properties.put("javax.persistence.jdbc.url", configuration.get("uri").asText());
+			properties.put("javax.persistence.jdbc.user", configuration.get("user").asText());
+			properties.put("javax.persistence.jdbc.password", configuration.get("password").asText());
+			EntityManagerFactory factory = Persistence.createEntityManagerFactory(Application.DB_NAME, properties);
+			this.manager = factory.createEntityManager();			
+		}
 	}
 	
 	@Override
@@ -44,9 +52,13 @@ public class Handler implements Runnable{
 				if(data != null && !data.equals("")) {
 					String[] measureData = data.split(";");		
 					measure = parse(measureData);
-					save(measure, Long.parseLong(measureData[0]));
-					System.out.println("Data saved: " + data);
-					
+					if(this.configuration.get("active").asBoolean()) {
+						save(measure, Long.parseLong(measureData[0]));
+						if(Logger.getRootLogger().isInfoEnabled()) {
+							Logger.getRootLogger().info("Data saved: " + data);
+						}
+						System.out.println("Data saved: " + data);
+					}					
 				}
 			} catch (InterruptedException e) {
 				System.out.println("Error while handling measure: ");
@@ -72,20 +84,22 @@ public class Handler implements Runnable{
 	}
 	
 	private void save(Measure measure, Long sensorID) {
-		try {
-			Sensor sensor = manager.find(Sensor.class, sensorID);
-			if(sensor != null) {
-				measure.setSensor(sensor);
-				manager.getTransaction().begin();
-				manager.persist(measure);
-				manager.getTransaction().commit();			
-			}
-		}catch(IllegalArgumentException | TransactionRequiredException e) {
-			manager.getTransaction().rollback();
-			throw e;
-		}catch(IllegalStateException e) {
-			System.out.println("Can't insert data can't use transaction on JTA entity manager: " + e.getMessage());
-			throw e;
+		if(this.manager != null) {
+			try {
+				Sensor sensor = manager.find(Sensor.class, sensorID);
+				if(sensor != null) {
+					measure.setSensor(sensor);
+					manager.getTransaction().begin();
+					manager.persist(measure);
+					manager.getTransaction().commit();			
+				}
+			}catch(IllegalArgumentException | TransactionRequiredException e) {
+				manager.getTransaction().rollback();
+				throw e;
+			}catch(IllegalStateException e) {
+				System.out.println("Can't insert data can't use transaction on JTA entity manager: " + e.getMessage());
+				throw e;
+			}			
 		}
 	}
 	
