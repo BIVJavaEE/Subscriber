@@ -5,7 +5,7 @@
   },
   "database" : {
     "active" : true,
-    "driver" : "com.mysql.jdbc.Driver",
+    "driver" : "com.mysql.jc.jdbc.Driver",
     "hibernate_dialect" : "org.hibernate.dialect.MySQL5Dialect",
     "uri" : "jdbc:mysql://localhost:3306/database?serverTimezone=UTC",
     "user" : "",
